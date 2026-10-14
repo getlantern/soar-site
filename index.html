@@ -286,14 +286,14 @@ section { padding-block: 92px 20px; }
 
 /* start */
 .start { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
-.term { margin: 0; min-width: 0; display: grid; }
+.term { margin: 0; min-width: 0; display: grid; grid-template-rows: auto 1fr; }
 .term .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; background: var(--ink); color: var(--paper); font: 600 .74rem/1 var(--display); letter-spacing: .14em; text-transform: uppercase; }
 .term button { appearance: none; border: 1px solid currentColor; background: transparent; color: inherit; font: 600 .68rem/1 var(--display); letter-spacing: .12em; text-transform: uppercase; padding: 6px 9px; cursor: pointer; }
 .term button:hover { color: var(--magenta); }
 .term pre { margin: 0; padding: 18px; background: var(--code-bg); border: 2px solid var(--ink); border-top: 0; font: 400 .76rem/1.75 var(--mono); overflow-x: auto; color: var(--ink); }
 .term pre i { color: var(--ink-2); font-style: normal; }
 .term pre b { color: var(--magenta); font-weight: 500; }
-.start-note { margin-top: 22px; color: var(--ink-2); font-size: .95rem; }
+.start-note, .wire-note { margin-top: 22px; color: var(--ink-2); font-size: .95rem; }
 
 /* status + footer */
 .status { margin-top: 92px; border: 2px solid var(--magenta); padding: 26px 28px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px 26px; align-items: start; }
@@ -351,13 +351,14 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <a href="#benchmarks">Benchmarks</a>
       <a href="#wire">Wire format</a>
       <a href="#start">Get started</a>
+      <a href="https://github.com/getlantern/soar/blob/main/SPEC.md">Spec</a>
       <a href="https://kindling.lantern.io">Kindling</a>
       <a href="https://github.com/getlantern/soar">GitHub</a>
     </nav>
   </header>
 
   <div class="hero" id="top">
-    <p class="byline">From the <a href="https://lantern.io">Lantern</a> team. Open source, Apache 2.0.</p>
+    <p class="byline">From the <a href="https://lantern.io">Lantern</a> team. Open source in Go and Rust, Apache 2.0.</p>
     <h1><span class="soa">Soa</span><span class="r">r</span><small><b>SOA</b>, start of authority: the first record in every DNS zone.</small></h1>
     <div class="thesis">
       <p class="big">A DNS tunnel for networks that block everything except DNS.</p>
@@ -581,6 +582,7 @@ pn 742  STREAM id=4 … FIN  → national   <b>(dup)</b></pre>
       <div><h3>Server authenticated</h3><p>The server signs the handshake transcript with Ed25519. Clients ship only its public key, so there is no shared secret for a censor to pull out of an app.</p></div>
       <div><h3>Sealed per direction</h3><p>ChaCha20-Poly1305 with a separate key each way and the tag truncated to 8 bytes. Packet numbers are protected QUIC-style, so the wire carries no visible counters.</p></div>
     </div>
+    <p class="wire-note">The protocol is specified in <a href="https://github.com/getlantern/soar/blob/main/SPEC.md">SPEC.md</a>, with byte-exact test vectors. It has two interoperable implementations, client and server alike: the reference one in <a href="https://github.com/getlantern/soar">Go</a>, and one in <a href="https://github.com/getlantern/soar-rs">Rust</a>. Both pass the same vectors, and CI runs each language's client against the other's server.</p>
   </section>
 
   <section id="kindling" aria-labelledby="kin-h">
@@ -602,13 +604,14 @@ pn 742  STREAM id=4 … FIN  → national   <b>(dup)</b></pre>
     <div class="head">
       <span class="label">Get started</span>
       <h2 id="start-h">Run a server, ship a key</h2>
-      <p class="lede">Delegate a zone to a host with an NS record, generate a key pair, and point clients at it.</p>
+      <p class="lede">Delegate a zone to a host with an NS record, generate a key pair, and point clients at it. The Go and Rust servers take the same flags and key files, and either one serves either client.</p>
     </div>
     <div class="start">
       <figure class="term">
         <div class="top"><span>Server</span><button type="button" data-copy="srv">Copy</button></div>
-<pre id="srv"><i># install</i>
+<pre id="srv"><i># install, from Go or from Rust</i>
 go install github.com/getlantern/soar/cmd/soar-server@latest
+cargo install --git https://github.com/getlantern/soar-rs
 
 <i># save the private key to key (keep it secret)</i>
 (umask 077; soar-server keygen | awk '$1 == "private" { print $2 }' &gt; key)
@@ -629,6 +632,23 @@ soar-server <b>-zone</b> t.example.com <b>-key-file</b> key <b>-listen</b> :53</
 })
 conn, err := c.<b>DialContext</b>(ctx, "tcp", "example.com:443")</pre>
       </figure>
+      <figure class="term">
+        <div class="top"><span>Client, Rust</span><button type="button" data-copy="cli-rs">Copy</button></div>
+<pre id="cli-rs">let mut cfg = ClientConfig::new("t.example.com", server_key,
+    &amp;["192.0.2.1:53", "192.0.2.2:53"]);
+cfg.discovery.enabled = true;
+cfg.discovery.country = "IR".into();
+let client = Client::new(cfg).await?;
+let conn = client.<b>connect</b>("example.com:443").await?;</pre>
+      </figure>
+      <figure class="term">
+        <div class="top"><span>Client, command line</span><button type="button" data-copy="cli-fwd">Copy</button></div>
+<pre id="cli-fwd"><i># installed with the Rust server above</i>
+<i># forward local port 7000 through the tunnel</i>
+soar-client <b>-zone</b> t.example.com <b>-pubkey</b> KEY \
+    <b>-resolver</b> 192.0.2.1:53,192.0.2.2:53 <b>-discover</b> \
+    <b>-listen</b> 127.0.0.1:7000 <b>-forward</b> example.com:443</pre>
+      </figure>
     </div>
     <p class="start-note">The server dials destinations for anyone holding its public key, so by default it refuses private addresses, including its own, and allows only ports 80 and 443 (<code>-allow-ports</code> changes that). The client also plugs straight into <a href="https://github.com/getlantern/kindling">kindling</a> as its DNS-tunnel transport, which is how <a href="https://lantern.io">Lantern</a> uses it.</p>
   </section>
@@ -637,14 +657,14 @@ conn, err := c.<b>DialContext</b>(ctx, "tcp", "example.com:443")</pre>
     <span class="tagline">Pre-release</span>
     <div>
       <p>Soar is open source under the Apache 2.0 license and built by the <a href="https://lantern.io">Lantern</a> team, who make Lantern, a free app for getting past internet censorship. The protocol may still change and has no compatibility promise yet.</p>
-      <p>Its bundled Iran resolver and range lists come from KevinNet DNS (MIT). Issues and pull requests are welcome on <a href="https://github.com/getlantern/soar">GitHub</a>.</p>
+      <p>Its bundled Iran resolver and range lists come from KevinNet DNS (MIT). Issues and pull requests are welcome on GitHub, for the <a href="https://github.com/getlantern/soar">Go implementation and the spec</a>, the <a href="https://github.com/getlantern/soar-rs">Rust implementation</a>, or <a href="https://github.com/getlantern/soar-site">this site</a>.</p>
     </div>
   </div>
 </div>
 
 <footer>
   <div class="wrap">
-    <span>Soar · github.com/getlantern/soar · Apache 2.0</span>
+    <span>Soar · <a href="https://github.com/getlantern/soar">Go</a> · <a href="https://github.com/getlantern/soar-rs">Rust</a> · Apache 2.0</span>
     <span><a href="https://kindling.lantern.io">kindling</a> · <a href="https://lantern.io">Lantern</a></span>
     <span>A <a href="https://lantern.io">Lantern</a> project</span>
   </div>
