@@ -3,16 +3,206 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta property="og:title" content="Soar">
-<meta property="og:description" content="A DNS tunnel for networks that block everything except DNS.">
-<meta property="og:url" content="https://soar.lantern.io/">
-<meta property="og:type" content="website">
+<title>Soar: a fast DNS tunnel for censored networks, from Lantern</title>
+<meta name="description" content="Soar is an open-source DNS tunnel from Lantern for networks that block everything but DNS. It uses every resolver at once and shrugs off forged answers.">
 <link rel="canonical" href="https://soar.lantern.io/">
 <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>Soar</title>
-<meta name="description" content="Soar is a DNS tunnel for networks that block everything except DNS. It uses every resolver at once, survives forged answers and blocked UDP, and connects in under a second.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Soar">
+<meta property="og:url" content="https://soar.lantern.io/">
+<meta property="og:title" content="Soar: a fast DNS tunnel for censored networks, from Lantern">
+<meta property="og:description" content="A DNS tunnel for networks that block everything except DNS. It uses every resolver at once, shrugs off forged answers and blocked UDP, and is open source in Go and Rust.">
+<meta property="og:image" content="https://soar.lantern.io/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Soar: a DNS tunnel for networks that block everything except DNS">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Soar: a fast DNS tunnel for censored networks, from Lantern">
+<meta name="twitter:description" content="A DNS tunnel for networks that block everything except DNS. It uses every resolver at once, shrugs off forged answers and blocked UDP, and is open source in Go and Rust.">
+<meta name="twitter:image" content="https://soar.lantern.io/og.png">
+<meta name="theme-color" content="#eef1ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e151d" media="(prefers-color-scheme: dark)">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "Organization",
+   "@id": "https://lantern.io/#organization",
+   "name": "Lantern",
+   "legalName": "Brave New Software Project, Inc.",
+   "url": "https://lantern.io",
+   "sameAs": [
+    "https://github.com/getlantern"
+   ]
+  },
+  {
+   "@type": "WebSite",
+   "@id": "https://soar.lantern.io/#website",
+   "url": "https://soar.lantern.io/",
+   "name": "Soar",
+   "publisher": {
+    "@id": "https://lantern.io/#organization"
+   },
+   "inLanguage": "en"
+  },
+  {
+   "@type": "WebPage",
+   "@id": "https://soar.lantern.io/#webpage",
+   "url": "https://soar.lantern.io/",
+   "name": "Soar: a fast DNS tunnel for censored networks, from Lantern",
+   "isPartOf": {
+    "@id": "https://soar.lantern.io/#website"
+   },
+   "about": {
+    "@id": "https://soar.lantern.io/#software"
+   },
+   "primaryImageOfPage": "https://soar.lantern.io/og.png",
+   "inLanguage": "en"
+  },
+  {
+   "@type": "SoftwareSourceCode",
+   "@id": "https://soar.lantern.io/#software",
+   "name": "Soar",
+   "description": "Soar is an open-source DNS tunnel from Lantern for networks that censor everything except DNS. It carries TCP connections as DNS queries and answers through ordinary recursive resolvers (the ISP's, public ones, and in-country ones it discovers) to a server that is the authoritative name server for a zone delegated to it.",
+   "codeRepository": "https://github.com/getlantern/soar",
+   "programmingLanguage": [
+    "Go",
+    "Rust"
+   ],
+   "license": "https://www.apache.org/licenses/LICENSE-2.0",
+   "url": "https://soar.lantern.io/",
+   "author": {
+    "@id": "https://lantern.io/#organization"
+   },
+   "keywords": "DNS tunnel, censorship circumvention, recursive resolvers, dnstt, slipstream, Iran, Russia, China, kindling"
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://soar.lantern.io/#faq",
+   "isPartOf": {
+    "@id": "https://soar.lantern.io/#webpage"
+   },
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "What is Soar?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Soar is an open-source DNS tunnel from Lantern for networks that censor everything except DNS. It carries TCP connections as DNS queries and answers through ordinary recursive resolvers (the ISP's, public ones, and in-country ones it discovers) to a server that is the authoritative name server for a zone delegated to it."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How does a DNS tunnel get past censorship?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "A censor can block an IP address, a TLS fingerprint or a whole protocol, but blocking the resolvers that every phone, bank and government site depends on is much harder. Soar's client seals data into the names it looks up under its zone, resolvers pass those queries on to Soar's server, and the server's answers carry data back. See how it works."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How is Soar different from dnstt and VayDNS?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "dnstt and VayDNS are simple, but they use a single resolver and recover slowly from loss. Soar sends on every working resolver at once, weighted by how each one is performing, and drops a dead one without the user noticing. Retransmissions are re-cut to fit whichever resolver they go out on, and the server resends exactly what the client reports lost instead of waiting out a timer."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How is Soar different from slipstream and MasterDnsVPN?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "slipstream runs QUIC over DNS and copes with loss, but in Soar's benchmarks it can't connect when a resolver truncates answers, when some resolvers are dead, or when UDP is blocked, and its Rust implementation is archived. MasterDnsVPN and its forks, StormDNS and CottenDNS, handle resolvers well but share one static key among all clients, and on impaired networks can take tens of seconds to connect. Soar connected in 0.3 to 1.4 seconds in every benchmark network, and each session starts with its own key exchange."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How fast is Soar?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "In an emulator that puts eight tunnels behind the same impaired resolvers, Soar fetched 100 KB at 476 KB/s through clean resolvers, 124 KB/s on a realistic mobile network and 130 KB/s in a Russia-like network, and had the highest throughput in 7 of 9 networks. These are emulator results; field measurements from inside Iran, Russia and China come next. See the benchmarks."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Does Soar work in Iran, Russia and China?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "It is built for how each one breaks DNS: AAAA answers where resolvers filter TXT and short names where they drop long ones, as in Iran; DNS over TCP port 53 with RFC 7766 pipelining where UDP to public resolvers is intercepted, as in Russia; and authenticated answers, so forged ones are ignored, as in China. It bundles in-country resolver lists for all three. So far it has been measured in an emulator that reproduces each network, not yet in the field."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Can a censor read or forge Soar's traffic?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Every session starts with an ephemeral X25519 key exchange that the server signs with its Ed25519 key, and each direction is sealed with ChaCha20-Poly1305 under its own key, so recorded traffic stays sealed even if the server's long-term key leaks later. A forged answer can't authenticate, so the client drops it and waits for the real one. Clients ship only the server's public key, so there's no shared secret to pull out of an app."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How do I run a Soar server?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Delegate a zone, such as t.example.com, to your host with an NS record, generate a key pair with soar-server keygen, and run soar-server for that zone on port 53. Clients need the zone, the server's public key and some resolvers. By default the server dials only public addresses on ports 80 and 443. See Get started."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is there a Rust implementation?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes. soar-rs is a wire-compatible Rust client and server, still early work. Both implementations pass the same byte-exact test vectors from the spec, CI runs each language's client against the other's server, and the Go and Rust servers take the same flags and key files."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How does Lantern use Soar?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Soar is the last-resort transport in kindling, Lantern's open-source library for getting an app's first requests through a censored network. Kindling dials it only when every faster transport, such as domain fronting, has failed. Any Go app can do the same with kindling.WithDNSTunnel."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is Soar open source?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes, under the Apache License 2.0. The reference implementation, in Go, and the protocol spec are at github.com/getlantern/soar. Its bundled Iran resolver and range lists come from KevinNet DNS, under the MIT license."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is Soar ready for production?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Not yet. Soar is pre-release: the protocol may still change and has no compatibility promise."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Who makes Soar?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "The Lantern team, who make Lantern, a free app for getting past internet censorship. You can download Lantern from lantern.io."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Why is it called Soar?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Every DNS zone begins with an SOA record, its start of authority. Soar's server is the authority for its zone, where every query ends up, whichever resolver it passed through. Add an r and the authority soars over the wall."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
 <link rel="stylesheet" href="fonts.css">
 <style>
 /* Layout: an aeronautical chart. Paper ground, magenta and blue chart inks, the censored
@@ -304,6 +494,30 @@ section { padding-block: 92px 20px; }
 footer { padding-block: 56px 48px; margin-top: 64px; border-top: 2px solid var(--ink); }
 footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; font: 400 .74rem/1.6 var(--mono); color: var(--ink-2); }
 
+/* faq */
+.faq { border-top: 2px solid var(--ink); counter-reset: qa; }
+.qa {
+  display: grid; grid-template-columns: 74px minmax(0, 1fr) minmax(0, 1.25fr); gap: 8px 32px;
+  padding-block: 24px; border-bottom: 1px solid var(--rule); align-items: start;
+}
+.qa::before {
+  counter-increment: qa; content: "Q" counter(qa, decimal-leading-zero);
+  font: 700 1.5rem/1.1 var(--display); color: var(--magenta); font-variant-numeric: tabular-nums; letter-spacing: .02em;
+}
+.qa h3 { font-size: 1.35rem; line-height: 1.12; }
+.qa p { color: var(--ink-2); font-size: .98rem; }
+
+/* more from lantern */
+.more { margin-top: 92px; }
+.sisters {
+  list-style: none; margin: 18px 0 0; padding: 0; border-top: 2px solid var(--ink);
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0 32px;
+}
+.sisters li { padding: 14px 0; border-bottom: 1px solid var(--rule); display: grid; gap: 4px; min-width: 0; }
+.sisters a { font: 700 1.1rem/1.1 var(--display); letter-spacing: .03em; text-decoration: none; color: var(--ink); }
+.sisters a:hover { color: var(--magenta); }
+.sisters span { font: 400 .74rem/1.5 var(--mono); color: var(--ink-2); }
+
 /* load sequence */
 @keyframes rise { from { transform: translateY(14px); opacity: .001; } to { transform: none; opacity: 1; } }
 .hero > * { animation: rise .7s cubic-bezier(.2,.7,.2,1) both; }
@@ -322,6 +536,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   .leg { grid-template-columns: 54px minmax(0, 1fr); }
   .leg pre { grid-column: 2; }
   .crypto { grid-template-columns: minmax(0, 1fr); }
+  .qa { grid-template-columns: 54px minmax(0, 1fr); }
+  .qa p { grid-column: 2; }
   .crypto div + div { padding-left: 0; border-left: 0; border-top: 1px solid var(--rule); }
 }
 @media (max-width: 640px) {
@@ -353,9 +569,11 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <a href="#benchmarks">Benchmarks</a>
       <a href="#wire">Wire format</a>
       <a href="#start">Get started</a>
+      <a href="#faq">FAQ</a>
       <a href="https://github.com/getlantern/soar/blob/main/SPEC.md">Spec</a>
       <a href="https://kindling.lantern.io">Kindling</a>
       <a href="https://github.com/getlantern/soar">GitHub</a>
+      <a href="https://lantern.io">Lantern</a>
     </nav>
   </header>
 
@@ -655,6 +873,73 @@ soar-client <b>-zone</b> t.example.com <b>-pubkey</b> KEY \
     <p class="start-note">The server dials destinations for anyone holding its public key, so by default it refuses private addresses, including its own, and allows only ports 80 and 443 (<code>-allow-ports</code> changes that). The client also plugs straight into <a href="https://github.com/getlantern/kindling">kindling</a> as its DNS-tunnel transport, which is how <a href="https://lantern.io">Lantern</a> uses it.</p>
   </section>
 
+  <section id="faq" aria-labelledby="faq-h">
+    <div class="head">
+      <span class="label">FAQ</span>
+      <h2 id="faq-h">Questions about Soar</h2>
+    </div>
+    <div class="faq">
+      <!-- faq:start -->
+      <div class="qa" id="what-is-soar">
+        <h3>What is Soar?</h3>
+        <p>Soar is an open-source DNS tunnel from <a href="https://lantern.io">Lantern</a> for networks that censor everything except DNS. It carries TCP connections as DNS queries and answers through ordinary recursive resolvers (the ISP's, public ones, and in-country ones it discovers) to a server that is the authoritative name server for a zone delegated to it.</p>
+      </div>
+      <div class="qa" id="how-does-a-dns-tunnel-get-past-censorship">
+        <h3>How does a DNS tunnel get past censorship?</h3>
+        <p>A censor can block an IP address, a TLS fingerprint or a whole protocol, but blocking the resolvers that every phone, bank and government site depends on is much harder. Soar's client seals data into the names it looks up under its zone, resolvers pass those queries on to Soar's server, and the server's answers carry data back. See <a href="#how">how it works</a>.</p>
+      </div>
+      <div class="qa" id="how-is-soar-different-from-dnstt-and-vaydns">
+        <h3>How is Soar different from dnstt and VayDNS?</h3>
+        <p>dnstt and VayDNS are simple, but they use a single resolver and recover slowly from loss. Soar sends on every working resolver at once, weighted by how each one is performing, and drops a dead one without the user noticing. Retransmissions are re-cut to fit whichever resolver they go out on, and the server resends exactly what the client reports lost instead of waiting out a timer.</p>
+      </div>
+      <div class="qa" id="how-is-soar-different-from-slipstream-and-masterdnsvpn">
+        <h3>How is Soar different from slipstream and MasterDnsVPN?</h3>
+        <p>slipstream runs QUIC over DNS and copes with loss, but in Soar's benchmarks it can't connect when a resolver truncates answers, when some resolvers are dead, or when UDP is blocked, and its Rust implementation is archived. MasterDnsVPN and its forks, StormDNS and CottenDNS, handle resolvers well but share one static key among all clients, and on impaired networks can take tens of seconds to connect. Soar connected in 0.3 to 1.4 seconds in every benchmark network, and each session starts with its own key exchange.</p>
+      </div>
+      <div class="qa" id="how-fast-is-soar">
+        <h3>How fast is Soar?</h3>
+        <p>In an emulator that puts eight tunnels behind the same impaired resolvers, Soar fetched 100&nbsp;KB at 476&nbsp;KB/s through clean resolvers, 124&nbsp;KB/s on a realistic mobile network and 130&nbsp;KB/s in a Russia-like network, and had the highest throughput in 7 of 9 networks. These are emulator results; field measurements from inside Iran, Russia and China come next. See the <a href="#benchmarks">benchmarks</a>.</p>
+      </div>
+      <div class="qa" id="does-soar-work-in-iran-russia-and-china">
+        <h3>Does Soar work in Iran, Russia and China?</h3>
+        <p>It is built for how each one breaks DNS: AAAA answers where resolvers filter TXT and short names where they drop long ones, as in Iran; DNS over TCP port 53 with RFC&nbsp;7766 pipelining where UDP to public resolvers is intercepted, as in Russia; and authenticated answers, so forged ones are ignored, as in China. It bundles in-country resolver lists for all three. So far it has been measured in an emulator that reproduces each network, not yet in the field.</p>
+      </div>
+      <div class="qa" id="can-a-censor-read-or-forge-soar-s-traffic">
+        <h3>Can a censor read or forge Soar&#x27;s traffic?</h3>
+        <p>Every session starts with an ephemeral X25519 key exchange that the server signs with its Ed25519 key, and each direction is sealed with ChaCha20-Poly1305 under its own key, so recorded traffic stays sealed even if the server's long-term key leaks later. A forged answer can't authenticate, so the client drops it and waits for the real one. Clients ship only the server's public key, so there's no shared secret to pull out of an app.</p>
+      </div>
+      <div class="qa" id="how-do-i-run-a-soar-server">
+        <h3>How do I run a Soar server?</h3>
+        <p>Delegate a zone, such as <code>t.example.com</code>, to your host with an NS record, generate a key pair with <code>soar-server keygen</code>, and run <code>soar-server</code> for that zone on port 53. Clients need the zone, the server's public key and some resolvers. By default the server dials only public addresses on ports 80 and 443. See <a href="#start">Get started</a>.</p>
+      </div>
+      <div class="qa" id="is-there-a-rust-implementation">
+        <h3>Is there a Rust implementation?</h3>
+        <p>Yes. <a href="https://github.com/getlantern/soar-rs">soar-rs</a> is a wire-compatible Rust client and server, still early work. Both implementations pass the same byte-exact test vectors from the spec, CI runs each language's client against the other's server, and the Go and Rust servers take the same flags and key files.</p>
+      </div>
+      <div class="qa" id="how-does-lantern-use-soar">
+        <h3>How does Lantern use Soar?</h3>
+        <p>Soar is the last-resort transport in <a href="https://kindling.lantern.io">kindling</a>, Lantern's open-source library for getting an app's first requests through a censored network. Kindling dials it only when every faster transport, such as domain fronting, has failed. Any Go app can do the same with <code>kindling.WithDNSTunnel</code>.</p>
+      </div>
+      <div class="qa" id="is-soar-open-source">
+        <h3>Is Soar open source?</h3>
+        <p>Yes, under the Apache License 2.0. The reference implementation, in Go, and the protocol <a href="https://github.com/getlantern/soar/blob/main/SPEC.md">spec</a> are at <a href="https://github.com/getlantern/soar">github.com/getlantern/soar</a>. Its bundled Iran resolver and range lists come from KevinNet DNS, under the MIT license.</p>
+      </div>
+      <div class="qa" id="is-soar-ready-for-production">
+        <h3>Is Soar ready for production?</h3>
+        <p>Not yet. Soar is pre-release: the protocol may still change and has no compatibility promise.</p>
+      </div>
+      <div class="qa" id="who-makes-soar">
+        <h3>Who makes Soar?</h3>
+        <p>The <a href="https://lantern.io">Lantern</a> team, who make Lantern, a free app for getting past internet censorship. You can <a href="https://lantern.io/download">download Lantern</a> from lantern.io.</p>
+      </div>
+      <div class="qa" id="why-is-it-called-soar">
+        <h3>Why is it called Soar?</h3>
+        <p>Every DNS zone begins with an SOA record, its start of authority. Soar's server is the authority for its zone, where every query ends up, whichever resolver it passed through. Add an r and the authority soars over the wall.</p>
+      </div>
+      <!-- faq:end -->
+    </div>
+  </section>
+
   <div class="status">
     <span class="tagline">Pre-release</span>
     <div>
@@ -662,13 +947,28 @@ soar-client <b>-zone</b> t.example.com <b>-pubkey</b> KEY \
       <p>Its bundled Iran resolver and range lists come from KevinNet DNS (MIT). Issues and pull requests are welcome on GitHub, for the <a href="https://github.com/getlantern/soar">Go implementation and the spec</a>, the <a href="https://github.com/getlantern/soar-rs">Rust implementation</a>, or <a href="https://github.com/getlantern/soar-site">this site</a>.</p>
     </div>
   </div>
+
+  <section class="more" aria-labelledby="more-h">
+    <span class="label" id="more-h">More from Lantern</span>
+    <ul class="sisters">
+      <li><a href="https://lantern.io">Lantern</a><span>free VPN and censorship-circumvention app</span></li>
+      <li><a href="https://samizdat.lantern.io">Samizdat</a><span>censorship-circumvention protocol shaped like real TLS</span></li>
+      <li><a href="https://kindling.lantern.io">Kindling</a><span>gets an app's first requests through censoring firewalls</span></li>
+      <li><a href="https://twiddle.lantern.io">twiddle</a><span>a TLS ClientHello, byte by byte</span></li>
+      <li><a href="https://lamplighter.lantern.io">Lamplighter</a><span>run a Lantern node</span></li>
+      <li><a href="https://corpus.lantern.io">Circumvention corpus</a><span>structured index of censorship-circumvention research</span></li>
+      <li><a href="https://geedge.lantern.io">Geedge leak index</a><span>what the Geedge/MESA leak reveals about censor capabilities</span></li>
+      <li><a href="https://ietf.lantern.io">IETF corpus</a><span>LLM-callable corpus of IETF RFCs and drafts</span></li>
+      <li><a href="https://unbounded-wp.lantern.io">Lantern Action Mode for WordPress</a><span>live demo</span></li>
+    </ul>
+  </section>
 </div>
 
 <footer>
   <div class="wrap">
     <span>Soar · <a href="https://github.com/getlantern/soar">Go</a> · <a href="https://github.com/getlantern/soar-rs">Rust</a> · Apache 2.0</span>
     <span><a href="https://kindling.lantern.io">kindling</a> · <a href="https://lantern.io">Lantern</a></span>
-    <span>A <a href="https://lantern.io">Lantern</a> project</span>
+    <span>A <a href="https://lantern.io">Lantern</a> project · <a href="https://lantern.io/download">Get Lantern</a></span>
   </div>
 </footer>
 
